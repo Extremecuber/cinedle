@@ -123,3 +123,19 @@ window.onload = () => {
     displayFrame(currentFrame);
     updateMessage('Guess the Movie!');
 };
+
+const { MongoClient } = require('mongodb');
+
+const uri = 'mongodb://27017/Cinedle';
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+async function connectToMongoDB() {
+    try {
+        await client.connect();
+        console.log('Connected to MongoDB');
+    } catch (err) {
+        console.error('Failed to connect to MongoDB', err);
+    }
+}
+
+connectToMongoDB();
