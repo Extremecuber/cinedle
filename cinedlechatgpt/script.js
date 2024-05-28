@@ -126,7 +126,7 @@ window.onload = () => {
 
 const { MongoClient } = require('mongodb');
 
-const uri = 'mongodb://27017/Cinedle';
+const uri = 'mongodb://localhost:27017/Cinedle';
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 async function connectToMongoDB() {
