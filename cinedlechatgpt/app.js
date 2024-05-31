@@ -21,7 +21,7 @@
 
 // const uri = 'mongodb://16.171.70.50:27017/Cinedle';
 
-// const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+// const client = new MongoClient(uri);
 
 // async function connectToMongoDB() {
 //     try {
