@@ -1,10 +1,5 @@
 const frames = [
-    'bramhotsavam1.png', // Replace with your image paths
-    'bramhotsavam2.png',
-    'bramhotsavam3.png',
-    'bramhotsavam4.png',
-    'bramhotsavam5.png',
-    'bramhotsavam6.png'
+    // Hardcoded array of image paths replaced with MongoDB data
 ];
 
 const correctMovie = 'bramhotsavam';  // Replace with the correct movie title
@@ -120,22 +115,39 @@ function displayEndGameMessage(message, imagePath) {
 }
 
 window.onload = () => {
-    displayFrame(currentFrame);
+    loadImagesFromMongoDB();
     updateMessage('Guess the Movie!');
 };
 
 const { MongoClient } = require('mongodb');
 
-const uri = 'mongodb://localhost:27017/Cinedle';
+const uri = 'mongodb://livehost:27017/Cinedle'; // Replace with your MongoDB URI
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 async function connectToMongoDB() {
     try {
         await client.connect();
         console.log('Connected to MongoDB');
+        return client.db().collection('images').find().toArray(); // Fetch all images from MongoDB
     } catch (err) {
         console.error('Failed to connect to MongoDB', err);
+        return []; // Return empty array if connection fails
     }
 }
 
-connectToMongoDB();
+async function getImagesFromMongoDB() {
+    try {
+        const images = await connectToMongoDB();
+        return images.map(image => image.path); // Assuming each image document has a 'path' field with the image path
+    } catch (err) {
+        console.error('Failed to fetch images from MongoDB', err);
+        return [];
+    }
+}
+
+// Use this function to get images from MongoDB and pass them to frames array
+async function loadImagesFromMongoDB() {
+    const fetchedFrames = await getImagesFromMongoDB();
+    frames.push(...fetchedFrames);
+    displayFrame(currentFrame); // Display the first frame after images are loaded
+}
