@@ -1,13 +1,9 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const path = require('path');
-const http = require('http');
-const https = require('https');
-const fs = require('fs');
 
 const app = express();
-const httpPort = process.env.HTTP_PORT || 3000; // Default HTTP port
-//const httpsPort = process.env.HTTPS_PORT || 443; // Default HTTPS port
+const port = process.env.PORT || 3000; // Use port 3000 for HTTP
 
 const uri = 'mongodb://localhost:27017'; // Connection string
 const dbName = 'Cinedle'; // Replace with your database name
@@ -39,20 +35,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Create HTTP server
-const httpServer = http.createServer(app);
-httpServer.listen(httpPort, () => {
-    console.log(`HTTP Server running on port ${httpPort}`);
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });
-
-// Optional: Create HTTPS server (requires SSL certificate)
-/*
-const options = {
-    key: fs.readFileSync('ssl/private.key'),
-    cert: fs.readFileSync('ssl/certificate.crt')
-};
-const httpsServer = https.createServer(options, app);
-httpsServer.listen(httpsPort, () => {
-    console.log(`HTTPS Server running on port ${httpsPort}`);
-});
-*/
