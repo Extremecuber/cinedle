@@ -1,8 +1,5 @@
-const frames = [
-    // Hardcoded array of image paths replaced with MongoDB data
-];
-
-const correctMovie = 'bramhotsavam';  // Replace with the correct movie title
+const frames = []; // Array to hold image paths fetched from MongoDB
+let correctMovie = '';  // Correct movie title will be dynamically set
 let currentFrame = 0;
 let guesses = 0;
 const maxGuesses = frames.length;
@@ -114,40 +111,52 @@ function displayEndGameMessage(message, imagePath) {
     body.appendChild(imageElement);
 }
 
-window.onload = () => {
-    loadImagesFromMongoDB();
+window.onload = async () => {
+    await loadImagesFromMongoDB();
     updateMessage('Guess the Movie!');
 };
 
-const { MongoClient } = require('mongodb');
-
-const uri = 'mongodb://livehost:27017/Cinedle'; // Replace with your MongoDB URI
-const client = new MongoClient(uri);
-
 async function connectToMongoDB() {
     try {
-        await client.connect();
-        console.log('Connected to MongoDB');
-        return client.db().collection('images').find().toArray(); // Fetch all images from MongoDB
+        const response = await fetch('/connect-to-mongodb');
+        if (response.ok) {
+            console.log('Connected to MongoDB');
+            return true;
+        } else {
+            console.error('Failed to connect to MongoDB');
+            return false;
+        }
     } catch (err) {
         console.error('Failed to connect to MongoDB', err);
-        return []; // Return empty array if connection fails
+        return false;
     }
 }
 
 async function getImagesFromMongoDB() {
     try {
-        const images = await connectToMongoDB();
-        return images.map(image => image.path); // Assuming each image document has a 'path' field with the image path
+        const response = await fetch('/get-images');
+        if (response.ok) {
+            const data = await response.json();
+            return { correctMovie: data.correctMovie, frames: data.frames };
+        } else {
+            console.error('Failed to fetch images from MongoDB');
+            return { correctMovie: '', frames: [] };
+        }
     } catch (err) {
         console.error('Failed to fetch images from MongoDB', err);
-        return [];
+        return { correctMovie: '', frames: [] };
     }
 }
 
 // Use this function to get images from MongoDB and pass them to frames array
 async function loadImagesFromMongoDB() {
-    const fetchedFrames = await getImagesFromMongoDB();
-    frames.push(...fetchedFrames);
-    displayFrame(currentFrame); // Display the first frame after images are loaded
+    if (await connectToMongoDB()) {
+        const { correctMovie, frames } = await getImagesFromMongoDB();
+        window.correctMovie = correctMovie;
+        window.frames.push(...frames);
+        displayFrame(currentFrame); // Display the first frame after images are loaded
+        maxGuesses = frames.length; // Update maxGuesses based on the number of frames loaded
+    } else {
+        updateMessage('Failed to load images. Please try again later.', '#ff6f61');
+    }
 }
