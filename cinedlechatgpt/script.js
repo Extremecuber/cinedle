@@ -1,8 +1,9 @@
 const frames = []; // Array to hold image paths fetched from MongoDB
 let correctMovie = '';  // Correct movie title will be dynamically set
+let endGameImage = '';  // End game image path will be dynamically set
 let currentFrame = 0;
 let guesses = 0;
-const maxGuesses = frames.length;
+let maxGuesses = 0; // Initialize maxGuesses to 0
 
 function displayFrame(index) {
     const existingFrame = document.getElementById(`frame${index}`);
@@ -57,12 +58,12 @@ function makeGuess() {
     }
 
     if (userGuess.toLowerCase() === correctMovie.toLowerCase()) {
-        displayEndGameMessage('Congratulations! You guessed it!', 'brampos.jpg'); // Replace with the actual path to the winning image
+        displayEndGameMessage('Congratulations! You guessed it!', endGameImage); // Use dynamically fetched end game image
         return;
     }
 
     if (guesses >= maxGuesses) {
-        displayEndGameMessage(`Sorry, you've used all your guesses. The correct movie was "${correctMovie}".`, 'brampos.jpg'); // Replace with the actual path to the losing image
+        displayEndGameMessage(`Sorry, you've used all your guesses. The correct movie was "${correctMovie}".`, endGameImage); // Use dynamically fetched end game image
         return;
     }
 
@@ -78,7 +79,7 @@ function makeGuess() {
 function skipFrame() {
     guesses++;
     if (guesses >= maxGuesses) {
-        displayEndGameMessage(`Sorry, you've used all your guesses. The correct movie was "${correctMovie}".`, 'brampos.jpg'); // Replace with the actual path to the losing image
+        displayEndGameMessage(`Sorry, you've used all your guesses. The correct movie was "${correctMovie}".`, endGameImage); // Use dynamically fetched end game image
         return;
     }
     document.getElementById('guessInput').value = '';
@@ -137,25 +138,45 @@ async function getImagesFromMongoDB() {
         const response = await fetch('/get-images');
         if (response.ok) {
             const data = await response.json();
-            return { correctMovie: data.correctMovie, frames: data.frames };
+            return data;
         } else {
             console.error('Failed to fetch images from MongoDB');
-            return { correctMovie: '', frames: [] };
+            return null;
         }
     } catch (err) {
         console.error('Failed to fetch images from MongoDB', err);
-        return { correctMovie: '', frames: [] };
+        return null;
     }
 }
 
 // Use this function to get images from MongoDB and pass them to frames array
 async function loadImagesFromMongoDB() {
     if (await connectToMongoDB()) {
-        const { correctMovie, frames } = await getImagesFromMongoDB();
-        window.correctMovie = correctMovie;
-        window.frames.push(...frames);
-        displayFrame(currentFrame); // Display the first frame after images are loaded
-        maxGuesses = frames.length; // Update maxGuesses based on the number of frames loaded
+        const data = await getImagesFromMongoDB();
+        if (data) {
+            // Randomly select a movie
+            const randomMovie = data[Math.floor(Math.random() * data.length)];
+
+            // Set the correct movie title
+            correctMovie = randomMovie.title;
+
+            // Filter out the end game image based on the presence of 'pos' in the title
+            const movieFrames = randomMovie.frames.filter(frame => !frame.includes('pos'));
+
+            // Set the end game image path
+            endGameImage = randomMovie.frames.find(frame => frame.includes('pos'));
+
+            // Set maxGuesses based on the number of frames
+            maxGuesses = movieFrames.length;
+
+            // Push frames to the frames array
+            frames.push(...movieFrames);
+
+            // Display the first frame after images are loaded
+            displayFrame(currentFrame);
+        } else {
+            updateMessage('Failed to load images. Please try again later.', '#ff6f61');
+        }
     } else {
         updateMessage('Failed to load images. Please try again later.', '#ff6f61');
     }
