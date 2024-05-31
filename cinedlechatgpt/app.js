@@ -45,17 +45,14 @@ app.get('/connect-to-mongodb', async (req, res) => {
 
 app.get('/get-images', async (req, res) => {
     try {
-        const collections = await db.listCollections().toArray();
-        const randomCollection = collections[Math.floor(Math.random() * collections.length)].name;
-        const images = await db.collection(randomCollection).find().toArray();
-        const imagePaths = images.map(image => image.path); // Assuming each image document has a 'path' field
-
-        res.json({ correctMovie: randomCollection, frames: imagePaths });
-    } catch (err) {
-        console.error('Failed to fetch images from MongoDB', err);
-        res.status(500).send('Internal Server Error');
+        const movies = await db.collection('movies').find().toArray(); // Adjust the collection name as needed
+        res.json(movies);
+    } catch (error) {
+        console.error('Failed to fetch images from MongoDB', error);
+        res.status(500).json({ error: 'Failed to fetch images' });
     }
 });
+
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
