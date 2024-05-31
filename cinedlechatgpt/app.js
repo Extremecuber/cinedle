@@ -6,8 +6,8 @@ const https = require('https');
 const fs = require('fs');
 
 const app = express();
-const httpPort = process.env.HTTP_PORT || 80; // Default HTTP port
-const httpsPort = process.env.HTTPS_PORT || 443; // Default HTTPS port
+const httpPort = process.env.HTTP_PORT || 3000; // Default HTTP port
+//const httpsPort = process.env.HTTPS_PORT || 443; // Default HTTPS port
 
 const uri = 'mongodb://localhost:27017'; // Connection string
 const dbName = 'Cinedle'; // Replace with your database name
