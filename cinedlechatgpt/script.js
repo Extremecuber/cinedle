@@ -138,6 +138,7 @@ async function getImagesFromMongoDB() {
         const response = await fetch('/get-images');
         if (response.ok) {
             const data = await response.json();
+            console.log('Fetched data from MongoDB:', data); // Debugging step
             return data;
         } else {
             console.error('Failed to fetch images from MongoDB');
@@ -154,23 +155,34 @@ async function loadImagesFromMongoDB() {
     if (await connectToMongoDB()) {
         const data = await getImagesFromMongoDB();
         if (data) {
+            // Ensure there are movies available
+            if (data.length === 0) {
+                updateMessage('No movies found in the database.', '#ff6f61');
+                return;
+            }
+
             // Randomly select a movie
             const randomMovie = data[Math.floor(Math.random() * data.length)];
+            console.log('Randomly selected movie:', randomMovie); // Debugging step
 
             // Set the correct movie title
             correctMovie = randomMovie.title;
+            console.log('Correct movie title:', correctMovie); // Debugging step
 
             // Filter out the end game image based on the presence of 'pos' in the title
             const movieFrames = randomMovie.frames.filter(frame => !frame.includes('pos'));
+            console.log('Filtered movie frames:', movieFrames); // Debugging step
 
             // Set the end game image path
             endGameImage = randomMovie.frames.find(frame => frame.includes('pos'));
+            console.log('End game image path:', endGameImage); // Debugging step
 
             // Set maxGuesses based on the number of frames
             maxGuesses = movieFrames.length;
 
             // Push frames to the frames array
             frames.push(...movieFrames);
+            console.log('Frames array:', frames); // Debugging step
 
             // Display the first frame after images are loaded
             displayFrame(currentFrame);
